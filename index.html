@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="auto">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>本地图片压缩工具（离线/隐私安全）</title>
+    <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+<header class="topbar">
+    <h1>本地图片压缩工具</h1>
+    <div class="spacer"></div>
+    <div class="theme-switcher">
+        <label>主题：</label>
+        <select id="themeSelect">
+            <option value="auto">跟随系统</option>
+            <option value="light">浅色</option>
+            <option value="dark">深色</option>
+        </select>
+    </div>
+</header>
+
+<main class="container">
+    <section class="dropzone" id="dropzone">
+        <div class="dz-hint">
+            <p>拖拽 / 粘贴图片到这里，或使用下方按钮添加（支持整文件夹）</p>
+            <p>支持格式：JPG/JPEG、PNG、WEBP、AVIF（若支持）、GIF（首帧）、BMP、TIFF（若支持）</p>
+            <p>单次最多 20 张，完全本地处理，不上传网络</p>
+        </div>
+        <input id="fileInput" type="file" accept="image/*" multiple hidden />
+        <input id="dirInput" type="file" webkitdirectory directory multiple hidden />
+        <div class="dz-actions">
+            <button id="btnPick">选择文件</button>
+            <button id="btnPickDir">添加文件夹</button>
+            <button id="btnClear">清空列表</button>
+        </div>
+    </section>
+
+    <section class="controls">
+        <div class="row">
+            <label>输出格式</label>
+            <select id="outFormat">
+                <option value="auto">自动（与原图相同，若需可改）</option>
+                <option value="image/jpeg">JPEG</option>
+                <option value="image/png">PNG</option>
+                <option value="image/webp">WEBP</option>
+                <option value="image/avif">AVIF（若支持）</option>
+            </select>
+        </div>
+        <div class="row">
+            <label>质量（有损）</label>
+            <input id="quality" type="range" min="0.1" max="1" step="0.01" value="0.85" />
+            <span id="qualityVal">0.85</span>
+        </div>
+        <div class="row grid2">
+            <div>
+                <label>目标宽（px，可空）</label>
+                <input id="targetW" type="number" min="1" placeholder="不改宽" />
+            </div>
+            <div>
+                <label>目标高（px，可空）</label>
+                <input id="targetH" type="number" min="1" placeholder="不改高" />
+            </div>
+        </div>
+        <div class="row">
+            <label><input id="keepAspect" type="checkbox" checked /> 保持宽高比</label>
+        </div>
+        <div class="row">
+            <label><input id="preserveMeta" type="checkbox" /> 尝试保留元信息（若浏览器与编码器支持）</label>
+        </div>
+        <div class="row">
+            <label>透明度处理（转有损如 JPEG）</label>
+            <select id="alphaPolicy">
+                <option value="drop">去除透明（以白底填充）</option>
+                <option value="black">以黑底填充</option>
+                <option value="white" selected>以白底填充</option>
+                <option value="custom">自定义颜色（#RRGGBB）</option>
+            </select>
+            <input id="alphaColor" type="text" value="#ffffff" />
+        </div>
+        <div class="row">
+            <button id="btnStart" class="primary">开始压缩</button>
+            <button id="btnExportZip">导出全部（ZIP）</button>
+            <button id="btnReport">查看报告</button>
+        </div>
+    </section>
+
+    <section class="progress">
+        <div class="meters">
+            <div>总数：<span id="statTotal">0</span></div>
+            <div>等待：<span id="statQueued">0</span></div>
+            <div>进行中：<span id="statRunning">0</span></div>
+            <div>成功：<span id="statDone">0</span></div>
+            <div>失败：<span id="statFail">0</span></div>
+        </div>
+        <div class="bar"><div id="barInner"></div></div>
+    </section>
+
+    <section class="list" id="cardList">
+        <!-- 动态生成卡片：缩略图、参数、状态、对比预览按钮 -->
+    </section>
+</main>
+
+<!-- 对比弹窗 -->
+<dialog id="compareDialog">
+    <div class="compare-wrap">
+        <div class="compare-toolbar">
+            <h3>原图 vs 压缩后 对比</h3>
+            <div class="spacer"></div>
+            <button id="btnMagnifier">放大镜</button>
+            <button id="btnCloseCompare">关闭</button>
+        </div>
+        <div class="slider" id="compareSlider">
+            <!-- 动态：before/after slider -->
+        </div>
+    </div>
+</dialog>
+
+<!-- 放大镜弹窗 -->
+<dialog id="magnifierDialog">
+    <div class="compare-toolbar">
+        <h3>放大镜对比</h3>
+        <div class="spacer"></div>
+        <button id="btnCloseMag">关闭</button>
+    </div>
+    <div id="magnifierWrap" class="magnifier-wrap"></div>
+</dialog>
+
+<!-- 报告弹窗 -->
+<dialog id="reportDialog">
+    <div class="report-toolbar">
+        <h3>压缩报告</h3>
+        <div class="spacer"></div>
+        <button id="btnExportCSV">导出 CSV</button>
+        <button id="btnExportJSON">导出 JSON</button>
+        <button id="btnCloseReport">关闭</button>
+    </div>
+    <div id="reportContent" class="report-content">
+        <!-- 汇总 + 表格 + 简易图表 -->
+    </div>
+</dialog>
+
+<script type="module" src="./js/utils.js"></script>
+<script type="module" src="./js/slider.js"></script>
+<script type="module" src="./js/report.js"></script>
+<script type="module" src="./js/main.js"></script>
+</body>
+</html>
